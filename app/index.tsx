@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 export default function LandingPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -26,14 +26,15 @@ export default function LandingPage() {
     }
     // Simulate verification
     Alert.alert('Success', `${isSignUp ? 'Sign Up' : 'Sign In'} successful!`);
-    // Navigate to next screen or reset
+    // Navigate to feed
+    router.push('/feed');
   };
 
   return (
-    <LinearGradient colors={['#667eea', '#764ba2']} style={styles.container}>
+    <View style={styles.container}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.innerContainer}>
         <View style={styles.header}>
-          <Ionicons name="chatbubbles" size={60} color="#fff" />
+          <Ionicons name="chatbubbles" size={60} color="#007bff" />
           <Text style={styles.title}>SocialConnect</Text>
           <Text style={styles.subtitle}>Connect with friends, share moments</Text>
         </View>
@@ -91,13 +92,14 @@ export default function LandingPage() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   innerContainer: {
     flex: 1,
@@ -111,28 +113,28 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#007bff',
     marginTop: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#e0e0e0',
+    color: '#007bff',
     marginTop: 5,
   },
   form: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#e6f3ff',
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.3,
+    // shadowRadius: 4,
     elevation: 5,
   },
   toggleContainer: {
     flexDirection: 'row',
     marginBottom: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#cce7ff',
     borderRadius: 25,
     padding: 5,
   },
@@ -143,37 +145,38 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   activeToggle: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
   },
   toggleText: {
-    color: '#fff',
+    color: '#007bff',
     fontWeight: 'bold',
   },
   activeToggleText: {
-    color: '#667eea',
+    color: '#ffffff',
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
     color: '#333',
+    // placeholderTextColor: '#999999',
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: '#007bff',
     borderRadius: 10,
     padding: 15,
     alignItems: 'center',
     marginBottom: 15,
   },
   buttonText: {
-    color: '#667eea',
+    color: '#ffffff',
     fontSize: 18,
     fontWeight: 'bold',
   },
   linkText: {
-    color: '#fff',
+    color: '#007bff',
     textAlign: 'center',
     textDecorationLine: 'underline',
   },
