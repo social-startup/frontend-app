@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { globalStyles } from '../styles/globalStyles';
+import { colors } from '../styles/colors';
 
 export default function LandingPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -31,34 +33,34 @@ export default function LandingPage() {
   };
 
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.innerContainer}>
-        <View style={styles.header}>
-          <Ionicons name="chatbubbles" size={60} color="#007bff" />
-          <Text style={styles.title}>SocialConnect</Text>
-          <Text style={styles.subtitle}>Connect with friends, share moments</Text>
+    <View style={globalStyles.container}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <View style={globalStyles.header}>
+          <Ionicons name="chatbubbles" size={60} color={colors.primary} />
+          <Text style={globalStyles.title}>SocialConnect</Text>
+          <Text style={globalStyles.subtitle}>Connect with friends, share moments</Text>
         </View>
 
-        <View style={styles.form}>
-          <View style={styles.toggleContainer}>
+        <View style={globalStyles.formCard}>
+          <View style={globalStyles.toggleContainer}>
             <TouchableOpacity
-              style={[styles.toggleButton, !isSignUp && styles.activeToggle]}
+              style={[globalStyles.toggleButton, !isSignUp && globalStyles.activeToggle]}
               onPress={() => setIsSignUp(false)}
             >
-              <Text style={[styles.toggleText, !isSignUp && styles.activeToggleText]}>Sign In</Text>
+              <Text style={[globalStyles.toggleText, !isSignUp && globalStyles.activeToggleText]}>Sign In</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.toggleButton, isSignUp && styles.activeToggle]}
+              style={[globalStyles.toggleButton, isSignUp && globalStyles.activeToggle]}
               onPress={() => setIsSignUp(true)}
             >
-              <Text style={[styles.toggleText, isSignUp && styles.activeToggleText]}>Sign Up</Text>
+              <Text style={[globalStyles.toggleText, isSignUp && globalStyles.activeToggleText]}>Sign Up</Text>
             </TouchableOpacity>
           </View>
 
           <TextInput
-            style={styles.input}
+            style={globalStyles.input}
             placeholder="Phone Number"
-            placeholderTextColor="#ccc"
+            placeholderTextColor={colors.textMuted}
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             keyboardType="phone-pad"
@@ -67,9 +69,9 @@ export default function LandingPage() {
 
           {otpSent && (
             <TextInput
-              style={styles.input}
+              style={globalStyles.input}
               placeholder="Enter 6-digit OTP"
-              placeholderTextColor="#ccc"
+              placeholderTextColor={colors.textMuted}
               value={otp}
               onChangeText={setOtp}
               keyboardType="numeric"
@@ -78,106 +80,20 @@ export default function LandingPage() {
           )}
 
           {!otpSent ? (
-            <TouchableOpacity style={styles.button} onPress={handleSendOtp}>
-              <Text style={styles.buttonText}>Send OTP</Text>
+            <TouchableOpacity style={globalStyles.button} onPress={handleSendOtp}>
+              <Text style={globalStyles.buttonText}>Send OTP</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity style={styles.button} onPress={handleVerifyOtp}>
-              <Text style={styles.buttonText}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
+            <TouchableOpacity style={globalStyles.button} onPress={handleVerifyOtp}>
+              <Text style={globalStyles.buttonText}>{isSignUp ? 'Sign Up' : 'Sign In'}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity onPress={() => setOtpSent(false)}>
-            <Text style={styles.linkText}>Didn't receive OTP? Resend</Text>
+            <Text style={globalStyles.linkText}>Didn't receive OTP? Resend</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
-  innerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#007bff',
-    marginTop: 10,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#007bff',
-    marginTop: 5,
-  },
-  form: {
-    backgroundColor: '#e6f3ff',
-    borderRadius: 20,
-    padding: 20,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.3,
-    // shadowRadius: 4,
-    elevation: 5,
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    backgroundColor: '#cce7ff',
-    borderRadius: 25,
-    padding: 5,
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderRadius: 20,
-  },
-  activeToggle: {
-    backgroundColor: '#ffffff',
-  },
-  toggleText: {
-    color: '#007bff',
-    fontWeight: 'bold',
-  },
-  activeToggleText: {
-    color: '#ffffff',
-  },
-  input: {
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-    color: '#333',
-    // placeholderTextColor: '#999999',
-  },
-  button: {
-    backgroundColor: '#007bff',
-    borderRadius: 10,
-    padding: 15,
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  linkText: {
-    color: '#007bff',
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-  },
-});
