@@ -1,48 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { View, Text, Image, FlatList, TouchableOpacity, StyleSheet, Share, Alert, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { globalStyles } from '../styles/globalStyles';
 import { colors } from '../styles/colors';
-
-const mockPosts = [
-  {
-    id: '1',
-    user: 'John Doe',
-    text: 'Had an amazing day at the beach! The sun was shining and the waves were perfect.',
-    // image: 'https://via.placeholder.com/400x220/0078d4/ffffff?text=Beach+Day',
-    likes: 42,
-    comments: 8,
-    liked: false,
-  },
-  {
-    id: '2',
-    user: 'Jane Smith',
-    text: 'Just finished reading an incredible book. Highly recommend it to everyone!',
-    image: 'https://picsum.photos/400/300',
-    likes: 28,
-    comments: 5,
-    liked: false,
-  },
-  {
-    id: '3',
-    user: 'Mike Johnson',
-    text: 'Excited to share my latest project. Check it out!',
-    image: 'https://picsum.photos/400/220',
-    likes: 67,
-    comments: 12,
-    liked: false,
-  },
-  {
-    id: '4',
-    user: 'Sarah Wilson',
-    text: 'Beautiful sunset today. Nature never ceases to amaze me.',
-    image: 'https://picsum.photos/400/220',
-    likes: 89,
-    comments: 15,
-    liked: false,
-  },
-];
-
+import { usePosts, haversineDistanceKm } from './context/PostsContext';
+import FilterBar from '../components/ui/FilterBar';
+import { router } from 'expo-router';
+import CommentModal from '../components/ui/CommentModal';
+import { useAuth } from './context/AuthContext';
 const styles = StyleSheet.create({
   postCard: {
     backgroundColor: colors.textWhite,
@@ -91,9 +56,10 @@ const styles = StyleSheet.create({
   },
   postImage: {
     width: '100%',
-    height: 220,
+    aspectRatio: 16 / 9,
     borderRadius: 10,
     marginBottom: 12,
+    resizeMode: 'cover',
   },
   postActions: {
     flexDirection: 'row',
@@ -124,96 +90,131 @@ const styles = StyleSheet.create({
     backgroundColor: '#f0f4f8',
   },
   });
-  export default function FeedPage() {
-  const [posts, setPosts] = useState(mockPosts);
+export default function FeedPage() {
+  const { posts, toggleLike, addComment } = usePosts();
+  const { user } = useAuth();
+  const [filters, setFilters] = useState<{ radiusKm?: number; center?: { lat: number; lon: number } | null; date?: string | null }>({});
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [activePostId, setActivePostId] = useState<string | null>(null);
 
-  const handleLike = (postId: string) => {
-    setPosts((prevPosts) =>
-      prevPosts.map((post) => {
-        if (post.id === postId) {
-          const isLiked = !post.liked;
+  const filtered = useMemo(() => {
+    return posts.filter((p) => {
+      if (filters.date) {
+        try {
+          const postDate = p.date ? p.date.split('T')[0] : null;
+          if (postDate !== filters.date) return false;
+        } catch (_) {}
+      }
+      if (filters.radiusKm && filters.center && p.coords) {
+        const d = haversineDistanceKm(filters.center as any, p.coords as any);
+        if (d > (filters.radiusKm || 0)) return false;
+      }
+      return true;
+    });
+  }, [posts, filters]);
 
-          return {
-            ...post,
-            liked: isLiked,
-            likes: isLiked ? post.likes + 1 : post.likes - 1,
-          };
-        }
-        return post;
-      })
-    );
-  };
+  async function handleShare(item: any) {
+    try {
+      await Share.share({ message: `${item.user}: ${item.text} ${item.image || ''}` });
+    } catch (e) {
+      Alert.alert('Share failed');
+    }
+  }
 
-  const renderPost = ({ item }: { item: typeof mockPosts[0] }) => (
-    <View style={styles.postCard}>
-      <View style={styles.postHeader}>
-        <View style={styles.userInfo}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={24} color={colors.textWhite} />
+  function openCommentModal(id: string) {
+    setActivePostId(id);
+    setCommentModalVisible(true);
+  }
+
+  function handleCommentSubmit(text: string) {
+    if (!activePostId) return;
+    addComment(activePostId, text, user ? user.name : 'You');
+    Alert.alert('Comment added');
+  }
+
+  function renderPost({ item }: { item: typeof posts[0] }) {
+    return (
+      <View style={styles.postCard}>
+        <View style={styles.postHeader}>
+          <View style={styles.userInfo}>
+            <View style={styles.avatar}>
+              <Ionicons name="person" size={24} color={colors.textWhite} />
+            </View>
+            <Text style={styles.userName}>{item.user}</Text>
           </View>
-          <Text style={styles.userName}>{item.user}</Text>
+          <TouchableOpacity onPress={() => router.push('/profile')}>
+            <Ionicons name="ellipsis-horizontal" size={20} color={colors.textDark} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity>
-          <Ionicons name="ellipsis-horizontal" size={20} color={colors.textDark} />
-        </TouchableOpacity>
+
+        <Text style={styles.postText}>{item.text}</Text>
+
+        {item.image && <Image source={{ uri: item.image }} style={styles.postImage} />}
+
+        <View style={styles.postActions}>
+          <TouchableOpacity
+            style={[styles.actionButton, item.liked && styles.actionButtonActive]}
+            onPress={() => toggleLike(item.id)}
+          >
+            <Ionicons name={item.liked ? 'heart' : 'heart-outline'} size={22} color={item.liked ? '#ff4458' : colors.primary} />
+            <Text style={styles.actionText}>{item.likes}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton} onPress={() => openCommentModal(item.id)}>
+            <Ionicons name="chatbubble-outline" size={22} color={colors.primary} />
+            <Text style={styles.actionText}>{item.comments.length}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.actionButton} onPress={() => handleShare(item)}>
+            <Ionicons name="share-social-outline" size={22} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
       </View>
-
-      <Text style={styles.postText}>{item.text}</Text>
-
-      {item.image && (
-        <Image source={{ uri: item.image }} style={styles.postImage} />
-      )}
-
-      <View style={styles.postActions}>
-        <TouchableOpacity
-          style={[
-            styles.actionButton,
-            item.liked && styles.actionButtonActive,
-          ]}
-          onPress={() => handleLike(item.id)}
-        >
-          <Ionicons
-            name={item.liked ? "heart" : "heart-outline"}
-            size={22}
-            color={item.liked ? "#ff4458" : colors.primary}
-          />
-          <Text style={styles.actionText}>{item.likes}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
-          <Ionicons
-            name="chatbubble-outline"
-            size={22}
-            color={colors.primary}
-          />
-          <Text style={styles.actionText}>{item.comments}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.actionButton}>
-          <Ionicons
-            name="share-social-outline"
-            size={22}
-            color={colors.primary}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  }
 
   return (
-    <View style={globalStyles.container}>
-      <View style={globalStyles.header}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#f0f4f8' }}>
+      <View style={[globalStyles.header, { alignItems: 'center' }]}>
         <Text style={globalStyles.headerTitle}>Feed</Text>
+        <View style={{ position: 'absolute', right: 12, top: 18, flexDirection: 'row' }}>
+          <TouchableOpacity style={{ marginRight: 12 }} onPress={() => router.push('/newpost')}>
+            <Ionicons name="add-circle" size={26} color={colors.textWhite} />
+          </TouchableOpacity>
+          <TouchableOpacity style={{ marginRight: 12 }} onPress={() => router.push('/map')}>
+            <Ionicons name="map-outline" size={26} color={colors.textWhite} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/profile')}>
+            <Ionicons name="person-circle" size={28} color={colors.textWhite} />
+          </TouchableOpacity>
+        </View>
       </View>
 
+      <FilterBar
+        onApply={(f) => {
+          setFilters(f);
+        }}
+      />
       <FlatList
-        data={posts}
+        data={filtered}
         renderItem={renderPost}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
-        contentContainerStyle={{ paddingVertical: 4 }}
+        contentContainerStyle={{ paddingVertical: 8, paddingBottom: 32 }}
       />
-    </View>
+
+      <CommentModal
+        visible={commentModalVisible}
+        comments={
+          activePostId ? (posts.find((p) => p.id === activePostId)?.comments || []) : []
+        }
+        onClose={() => {
+          setCommentModalVisible(false);
+          setActivePostId(null);
+        }}
+        onSubmit={handleCommentSubmit}
+      />
+    </SafeAreaView>
   );
 }
