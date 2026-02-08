@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { colors } from '../../styles/colors';
 
 type Props = {
@@ -22,7 +22,12 @@ export default function CommentModal({ visible, onClose, onSubmit, comments = []
   return (
     <Modal animationType="slide" transparent statusBarTranslucent visible={visible}>
       <View style={styles.backdrop}>
-        <View style={styles.box}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <ScrollView keyboardShouldPersistTaps="handled">
+            <View style={styles.box}>
           <Text style={styles.title}>Comments</Text>
           {comments && comments.length > 0 ? (
             <View style={{ maxHeight: 140, marginBottom: 8 }}>
@@ -54,7 +59,9 @@ export default function CommentModal({ visible, onClose, onSubmit, comments = []
               <Text style={styles.sendText}>Send</Text>
             </TouchableOpacity>
           </View>
-        </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );

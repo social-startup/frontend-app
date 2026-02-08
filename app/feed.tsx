@@ -149,7 +149,7 @@ export default function FeedPage() {
 
         <Text style={styles.postText}>{item.text}</Text>
 
-        {item.image && <Image source={{ uri: item.image }} style={styles.postImage} />}
+        {item.image ? <PostImage uri={item.image} style={styles.postImage} /> : null}
 
         <View style={styles.postActions}>
           <TouchableOpacity
@@ -171,6 +171,18 @@ export default function FeedPage() {
         </View>
       </View>
     );
+  }
+
+  function PostImage({ uri, style }: { uri: string; style?: any }) {
+    const [errored, setErrored] = useState(false);
+    if (!uri || errored) {
+      return (
+        <View style={[style, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef6ff' }]}>
+          <Ionicons name="image-outline" size={36} color={colors.primary} />
+        </View>
+      );
+    }
+    return <Image source={{ uri }} style={style} onError={() => setErrored(true)} />;
   }
 
   return (

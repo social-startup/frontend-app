@@ -17,6 +17,9 @@ export default function MapScreen() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
       <MapView style={styles.map} initialRegion={initialRegion}>
         {posts.map((p) =>
           p.coords ? (
@@ -36,4 +39,19 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
   marker: { width: 18, height: 18, borderRadius: 9, backgroundColor: colors.primary, borderWidth: 2, borderColor: colors.textWhite },
+  backButton: {
+    position: 'absolute',
+    top: 16,
+    left: 12,
+    zIndex: 10,
+    backgroundColor: colors.textWhite,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  backText: { color: colors.primary, fontWeight: '700' },
 });
