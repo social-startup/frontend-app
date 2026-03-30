@@ -4,14 +4,17 @@ import { StatusBar } from 'expo-status-bar';
 import { Slot } from 'expo-router';
 import { PostsProvider } from './context/PostsContext';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <PostsProvider>
-        <StatusBar hidden />
-        <Slot />
-      </PostsProvider>
+      <ThemeProvider>
+        <PostsProvider>
+          <StatusBar hidden />
+          <Slot />
+        </PostsProvider>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

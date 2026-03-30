@@ -47,7 +47,7 @@ export default function LandingPage() {
               style={[globalStyles.toggleButton, !isSignUp && globalStyles.activeToggle]}
               onPress={() => setIsSignUp(false)}
             >
-              <Text style={[globalStyles.toggleText, !isSignUp && globalStyles.activeToggleText]}>Sign In</Text>
+              <Text style={[globalStyles.toggleText, !isSignUp && globalStyles.activeToggleText, { color: colors.primary }]}>Sign In</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[globalStyles.toggleButton, isSignUp && globalStyles.activeToggle]}
